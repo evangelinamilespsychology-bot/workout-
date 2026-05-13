@@ -1,1 +1,478 @@
-# workout-
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunday Workout — Your Level</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --card: #1a1a1a;
+    --accent: #f0c060;
+    --green: #60e0a0;
+    --blue: #60b0ff;
+    --pink: #ff80c0;
+    --text: #f0ece4;
+    --muted: #888;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+#splash {
+position: fixed; inset: 0;
+background: var(–bg);
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+z-index: 100; gap: 12px; padding: 32px; text-align: center;
+}
+#splash h1 {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 48px; color: var(–accent); letter-spacing: 3px;
+}
+#splash p { color: var(–muted); font-size: 14px; max-width: 300px; line-height: 1.7; }
+.splash-stats {
+display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; margin-top: 8px;
+}
+.splash-stat { text-align: center; }
+.splash-stat-num { font-family: ‘Bebas Neue’, sans-serif; font-size: 26px; color: var(–accent); display: block; }
+.splash-stat-label { font-size: 10px; color: var(–muted); letter-spacing: 1.5px; text-transform: uppercase; }
+#start-btn {
+margin-top: 20px;
+background: var(–accent); color: #000;
+border: none; font-family: ‘Bebas Neue’, sans-serif;
+font-size: 22px; letter-spacing: 2px;
+padding: 16px 48px; border-radius: 50px; cursor: pointer;
+box-shadow: 0 4px 20px rgba(240,192,96,0.4);
+transition: transform 0.15s;
+}
+#start-btn:hover { transform: scale(1.05); }
+
+.badge-row {
+display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 4px;
+}
+.badge {
+font-size: 11px; font-weight: 700; padding: 5px 12px;
+border-radius: 20px; letter-spacing: 1px;
+}
+.badge.beginner { background: rgba(96,224,160,0.15); color: var(–green); }
+.badge.equipment { background: rgba(240,192,96,0.15); color: var(–accent); }
+
+#app { display: none; width: 100%; max-width: 500px; padding: 0 0 80px; }
+
+.top-bar {
+display: flex; align-items: center; justify-content: space-between;
+padding: 16px 20px;
+position: sticky; top: 0;
+background: rgba(13,13,13,0.95);
+backdrop-filter: blur(10px);
+z-index: 10;
+border-bottom: 1px solid #222;
+}
+.block-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(–accent); font-weight: 700; }
+.progress-text { font-size: 12px; color: var(–muted); }
+.progress-bar-wrap { width: 100%; height: 3px; background: #222; }
+.progress-bar-fill { height: 3px; background: var(–accent); transition: width 0.4s ease; }
+
+.ex-card {
+margin: 20px 16px 0; border-radius: 24px;
+overflow: hidden; background: var(–card);
+box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.ex-img-wrap {
+position: relative; width: 100%; height: 260px;
+overflow: hidden; background: #111;
+}
+.ex-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ex-img-overlay {
+position: absolute; inset: 0;
+background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.75) 100%);
+}
+.ex-name-overlay { position: absolute; bottom: 16px; left: 18px; right: 18px; }
+.ex-name-overlay h2 {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 28px; color: #fff; line-height: 1.1;
+}
+.ex-target { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 1px; margin-top: 2px; }
+
+.timer-section { padding: 20px 20px 24px; }
+.set-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.set-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+.set-badge.work { background: rgba(96,224,160,0.15); color: var(–green); }
+.set-badge.rest { background: rgba(96,176,255,0.15); color: var(–blue); }
+.set-badge.prep { background: rgba(240,192,96,0.15); color: var(–accent); }
+.rounds-info { font-size: 12px; color: var(–muted); }
+
+.circle-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
+.circle-timer { position: relative; width: 160px; height: 160px; }
+.circle-timer svg { width: 160px; height: 160px; transform: rotate(-90deg); }
+.circle-track { fill: none; stroke: #2a2a2a; stroke-width: 8; }
+.circle-fill { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+.circle-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.timer-num { font-family: ‘Bebas Neue’, sans-serif; font-size: 64px; line-height: 1; color: var(–text); }
+.timer-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); }
+
+.controls { display: flex; gap: 12px; justify-content: center; }
+.btn { border: none; cursor: pointer; border-radius: 50px; font-family: ‘Nunito’, sans-serif; font-weight: 700; transition: transform 0.12s; }
+.btn:active { transform: scale(0.95); }
+.btn-main { background: var(–accent); color: #000; font-size: 16px; padding: 14px 36px; }
+.btn-skip { background: #222; color: var(–muted); font-size: 14px; padding: 14px 20px; }
+.btn-prev { background: #222; color: var(–muted); font-size: 14px; padding: 14px 20px; }
+
+.tip-box {
+margin: 16px 16px 0;
+background: #151515;
+border-left: 3px solid var(–accent);
+border-radius: 0 12px 12px 0;
+padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #ccc;
+}
+.tip-box strong { color: var(–accent); }
+
+.queue-section { margin: 20px 16px 0; }
+.queue-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(–muted); margin-bottom: 10px; }
+.queue-list { display: flex; flex-direction: column; gap: 6px; }
+.queue-item {
+display: flex; align-items: center; gap: 10px;
+background: var(–card); border-radius: 10px;
+padding: 8px 12px; font-size: 13px; color: var(–muted); transition: all 0.3s;
+}
+.queue-item.active { background: #252520; color: var(–text); border-left: 3px solid var(–accent); }
+.queue-item.done { opacity: 0.35; text-decoration: line-through; }
+.queue-num { font-size: 10px; min-width: 18px; color: #555; }
+
+#done-screen {
+display: none; flex-direction: column;
+align-items: center; justify-content: center;
+min-height: 80vh; padding: 40px 24px; text-align: center; gap: 16px;
+}
+#done-screen .trophy { font-size: 72px; }
+#done-screen h2 { font-family: ‘Bebas Neue’, sans-serif; font-size: 44px; color: var(–accent); letter-spacing: 2px; }
+#done-screen p { color: var(–muted); font-size: 15px; line-height: 1.7; max-width: 300px; }
+#restart-btn {
+background: var(–accent); color: #000; border: none;
+font-family: ‘Bebas Neue’, sans-serif; font-size: 20px;
+letter-spacing: 2px; padding: 14px 40px; border-radius: 50px; cursor: pointer; margin-top: 12px;
+}
+</style>
+
+</head>
+<body>
+
+<div id="splash">
+  <div style="font-size:48px">🌅</div>
+  <h1>Sunday Workout</h1>
+  <p>Rebuilt just for your level. Shorter intervals, lighter weights, big results over time. Consistency beats intensity every time! 💛</p>
+  <div class="badge-row">
+    <span class="badge beginner">✓ Beginner Friendly</span>
+    <span class="badge equipment">1.25kg · Bands · Bodyweight</span>
+  </div>
+  <div class="splash-stats">
+    <div class="splash-stat"><span class="splash-stat-num">30s</span><span class="splash-stat-label">Work</span></div>
+    <div class="splash-stat"><span class="splash-stat-num">20s</span><span class="splash-stat-label">Rest</span></div>
+    <div class="splash-stat"><span class="splash-stat-num">2×</span><span class="splash-stat-label">Rounds</span></div>
+    <div class="splash-stat"><span class="splash-stat-num">~25</span><span class="splash-stat-label">Minutes</span></div>
+  </div>
+  <button id="start-btn" onclick="startWorkout()">LET'S GO SUNDAY! 💪</button>
+</div>
+
+<div id="app">
+  <div class="top-bar">
+    <div>
+      <div class="block-tag" id="block-name">Warm Up</div>
+      <div class="progress-text" id="progress-text">Exercise 1 of 12</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:20px;font-family:'Bebas Neue',sans-serif;color:var(--accent)" id="total-time">25:00</div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px">REMAINING</div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+
+  <div class="ex-card">
+    <div class="ex-img-wrap">
+      <img id="ex-img" src="" alt="Exercise">
+      <div class="ex-img-overlay"></div>
+      <div class="ex-name-overlay">
+        <h2 id="ex-name">Exercise</h2>
+        <div class="ex-target" id="ex-target">Target muscles</div>
+      </div>
+    </div>
+    <div class="timer-section">
+      <div class="set-info">
+        <div class="set-badge work" id="phase-badge">WORK</div>
+        <div class="rounds-info" id="rounds-info">Round 1 of 2</div>
+      </div>
+      <div class="circle-wrap">
+        <div class="circle-timer">
+          <svg viewBox="0 0 160 160">
+            <circle class="circle-track" cx="80" cy="80" r="68"/>
+            <circle class="circle-fill" id="circle-fill" cx="80" cy="80" r="68"
+              stroke="#60e0a0" stroke-dasharray="427" stroke-dashoffset="0"/>
+          </svg>
+          <div class="circle-center">
+            <div class="timer-num" id="timer-num">30</div>
+            <div class="timer-label" id="timer-label">seconds</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-prev" onclick="prevExercise()">◀ Prev</button>
+        <button class="btn btn-main" id="main-btn" onclick="togglePause()">PAUSE</button>
+        <button class="btn btn-skip" onclick="skipPhase()">Skip ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box" id="tip-box">Loading...</div>
+
+  <div class="queue-section">
+    <div class="queue-title">Up Next</div>
+    <div class="queue-list" id="queue-list"></div>
+  </div>
+</div>
+
+<div id="done-screen">
+  <div class="trophy">🏆</div>
+  <h2>Sunday Done!</h2>
+  <p>You showed up, you did it. That's what builds the body you want — not one hard session, but coming back every Sunday, every Tuesday, every Thursday. See you next time! 💛</p>
+  <button id="restart-btn" onclick="restartWorkout()">DO IT AGAIN</button>
+</div>
+
+<script>
+const EXERCISES = [
+  // WARM UP — 30 sec each, no rest, 1 round
+  {
+    name: "March in Place",
+    target: "Full body warm-up",
+    block: "🌅 Warm Up",
+    workTime: 40, restTime: 5, rounds: 1,
+    img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=520&fit=crop",
+    tip: "Lift your knees HIGH, swing your arms. Nice and easy — just waking your body up. Breathe normally."
+  },
+  {
+    name: "Hip Circles",
+    target: "Hip flexors & lower back",
+    block: "🌅 Warm Up",
+    workTime: 40, restTime: 5, rounds: 1,
+    img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=520&fit=crop",
+    tip: "Hands on hips, feet shoulder-width. Big slow circles — 20 sec each direction. Loosen up that lower back."
+  },
+  {
+    name: "Cat-Cow Stretch",
+    target: "Spine & core",
+    block: "🌅 Warm Up",
+    workTime: 40, restTime: 5, rounds: 1,
+    img: "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=600&h=520&fit=crop",
+    tip: "On all fours. Arch back UP like a cat (chin to chest), then dip DOWN like a cow (lift head). Slow and gentle."
+  },
+
+  // BLOCK 1 — CORE & WAIST — 30 sec work, 20 sec rest, 2 rounds
+  {
+    name: "Dead Bug",
+    target: "Deep core & lower belly",
+    block: "🔵 Block 1 — Core & Waist",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=600&h=520&fit=crop",
+    tip: "<strong>Your lower belly move!</strong> Lie on back, arms up, knees bent 90°. Slowly lower one arm + opposite leg. Press your lower back FLAT to the mat the whole time — that's the key."
+  },
+  {
+    name: "Bicycle Crunches",
+    target: "Obliques (waist)",
+    block: "🔵 Block 1 — Core & Waist",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=600&h=520&fit=crop&crop=top",
+    tip: "Hands behind head. Bring RIGHT elbow to LEFT knee, other leg extends. Go <strong>SLOW</strong> — that's what works the waist. Quality not speed!"
+  },
+  {
+    name: "Glute Bridge Hold",
+    target: "Glutes & lower back",
+    block: "🔵 Block 1 — Core & Waist",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=600&h=520&fit=crop",
+    tip: "Lie on back, feet flat. Push hips UP and <strong>hold at the top</strong>. Squeeze your glutes hard. Don't let hips drop. Breathe. This also works your core stabilisers."
+  },
+
+  // BLOCK 2 — GLUTES & THIGHS — 30 sec work, 20 sec rest, 2 rounds
+  {
+    name: "Banded Clamshell",
+    target: "Outer glutes & hips",
+    block: "🩷 Block 2 — Glutes & Thighs",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=600&h=520&fit=crop",
+    tip: "Band above knees. Lie on side, knees bent. Open top knee UP like a clamshell. <strong>Don't let hips roll back.</strong> Do 30 sec each side. Feel the outer glute burning."
+  },
+  {
+    name: "Standing Leg Abduction",
+    target: "Outer thighs & hips",
+    block: "🩷 Block 2 — Glutes & Thighs",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?w=600&h=520&fit=crop",
+    tip: "Hold a wall. Lift one leg slowly out to the side. Keep body <strong>completely upright</strong> — no leaning! Slow lift AND slow lower. 30 sec each leg."
+  },
+  {
+    name: "Banded Squat",
+    target: "Quads, glutes & thighs",
+    block: "🩷 Block 2 — Glutes & Thighs",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1567598508481-65985588e295?w=600&h=520&fit=crop",
+    tip: "Band above knees. Feet shoulder-width. Squat down slowly, then stand. <strong>Push knees OUT against the band</strong> the whole time. Go as deep as is comfortable — no pain!"
+  },
+
+  // BLOCK 3 — ARMS LIGHT — 30 sec work, 20 sec rest, 2 rounds
+  {
+    name: "Lateral Raises",
+    target: "Shoulders (1.25kg)",
+    block: "💚 Block 3 — Arms",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&h=520&fit=crop",
+    tip: "<strong>1.25kg only!</strong> Slight bend in elbows. Lift arms slowly to shoulder height — <strong>3 sec up, 3 sec down.</strong> If it burns by rep 5, that's perfect. Stop before form breaks."
+  },
+  {
+    name: "Bicep Curl",
+    target: "Biceps (1.25kg)",
+    block: "💚 Block 3 — Arms",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=600&h=520&fit=crop",
+    tip: "<strong>1.25kg.</strong> Curl up slowly, lower slowly. Elbows stay tucked to your sides — don't swing! The slow lowering is where the arm toning actually happens."
+  },
+  {
+    name: "Tricep Kickback",
+    target: "Back of arms (1.25kg)",
+    block: "💚 Block 3 — Arms",
+    workTime: 30, restTime: 20, rounds: 2,
+    img: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&h=520&fit=crop",
+    tip: "<strong>1.25kg.</strong> Hinge forward slightly. Upper arms stay still, extend arms <strong>fully straight back.</strong> This tightens the back of your arms. You'll feel it immediately!"
+  },
+];
+
+// Expand rounds
+let sequence = [];
+EXERCISES.forEach(ex => {
+  for(let r = 1; r <= ex.rounds; r++){
+    sequence.push({ ...ex, round: r });
+  }
+});
+
+let currentIdx = 0;
+let currentPhase = 'prep';
+let timeLeft = 5;
+let isPaused = true;
+let timer = null;
+let totalSecondsLeft = 25 * 60;
+let totalTimer = null;
+
+const CIRCUMFERENCE = 427;
+
+function startWorkout(){
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  currentIdx = 0; currentPhase = 'prep'; timeLeft = 5; isPaused = false;
+  renderExercise(); buildQueue(); startTimers();
+}
+
+function renderExercise(){
+  const ex = sequence[currentIdx];
+  document.getElementById('ex-name').textContent = ex.name;
+  document.getElementById('ex-target').textContent = ex.target;
+  document.getElementById('block-name').textContent = ex.block;
+  document.getElementById('progress-text').textContent = `Exercise ${currentIdx+1} of ${sequence.length}`;
+  document.getElementById('tip-box').innerHTML = ex.tip;
+  document.getElementById('rounds-info').textContent = `Round ${ex.round} of ${ex.rounds}`;
+  const img = document.getElementById('ex-img');
+  img.src = ex.img;
+  img.onerror = function(){ this.parentElement.style.background='linear-gradient(135deg,#1a1a2e,#16213e)'; this.style.display='none'; };
+  updatePhaseDisplay(); updateProgressBar(); buildQueue();
+}
+
+function updatePhaseDisplay(){
+  const ex = sequence[currentIdx];
+  const badge = document.getElementById('phase-badge');
+  const fill = document.getElementById('circle-fill');
+  const label = document.getElementById('timer-label');
+  let total, color;
+  if(currentPhase==='prep'){ total=5; color='#f0c060'; badge.className='set-badge prep'; badge.textContent='GET READY'; label.textContent='get ready'; }
+  else if(currentPhase==='work'){ total=ex.workTime; color='#60e0a0'; badge.className='set-badge work'; badge.textContent='WORK'; label.textContent='seconds'; }
+  else { total=ex.restTime; color='#60b0ff'; badge.className='set-badge rest'; badge.textContent='REST'; label.textContent='breathe'; }
+  fill.style.stroke = color;
+  fill.style.strokeDashoffset = CIRCUMFERENCE * (1 - timeLeft/total);
+  document.getElementById('timer-num').textContent = timeLeft;
+}
+
+function updateProgressBar(){
+  document.getElementById('prog-bar').style.width = (currentIdx/sequence.length*100)+'%';
+}
+
+function startTimers(){
+  clearInterval(timer);
+  timer = setInterval(tick, 1000);
+  if(!totalTimer){
+    totalTimer = setInterval(()=>{
+      if(!isPaused && totalSecondsLeft>0){
+        totalSecondsLeft--;
+        const m = Math.floor(totalSecondsLeft/60).toString().padStart(2,'0');
+        const s = (totalSecondsLeft%60).toString().padStart(2,'0');
+        document.getElementById('total-time').textContent = m+':'+s;
+      }
+    },1000);
+  }
+}
+
+function tick(){
+  if(isPaused) return;
+  timeLeft--;
+  if(timeLeft<=0){ advancePhase(); } else { updatePhaseDisplay(); }
+}
+
+function advancePhase(){
+  const ex = sequence[currentIdx];
+  if(currentPhase==='prep'){ currentPhase='work'; timeLeft=ex.workTime; }
+  else if(currentPhase==='work'){
+    if(currentIdx<sequence.length-1){ currentPhase='rest'; timeLeft=ex.restTime; }
+    else { finishWorkout(); return; }
+  } else {
+    currentIdx++;
+    if(currentIdx>=sequence.length){ finishWorkout(); return; }
+    currentPhase='prep'; timeLeft=5; renderExercise(); return;
+  }
+  updatePhaseDisplay();
+}
+
+function skipPhase(){ timeLeft=1; }
+function prevExercise(){ if(currentIdx>0){ currentIdx--; currentPhase='prep'; timeLeft=5; renderExercise(); } }
+function togglePause(){ isPaused=!isPaused; document.getElementById('main-btn').textContent=isPaused?'RESUME':'PAUSE'; }
+
+function buildQueue(){
+  const list = document.getElementById('queue-list');
+  list.innerHTML='';
+  const start=Math.max(0,currentIdx-1);
+  const end=Math.min(sequence.length,currentIdx+5);
+  for(let i=start;i<end;i++){
+    const ex=sequence[i];
+    const div=document.createElement('div');
+    div.className='queue-item'+(i===currentIdx?' active':(i<currentIdx?' done':''));
+    div.innerHTML=`<span class="queue-num">${i+1}</span><span>${ex.name}${ex.rounds>1?' · R'+ex.round:''}</span>`;
+    list.appendChild(div);
+  }
+}
+
+function finishWorkout(){
+  clearInterval(timer); clearInterval(totalTimer);
+  document.getElementById('app').style.display='none';
+  document.getElementById('done-screen').style.display='flex';
+}
+
+function restartWorkout(){
+  document.getElementById('done-screen').style.display='none';
+  totalSecondsLeft=25*60; totalTimer=null; startWorkout();
+}
+</script>
+
+</body>
+</html>
